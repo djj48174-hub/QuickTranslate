@@ -2,7 +2,7 @@
  * @name QuickTranslate
  * @author ijl
  * @description One-click translator: hit the 🌐 button next to the message box to send your message translated, and hover any message to translate it in place. Interface available in English and Arabic. (واجهة عربية وإنجليزية)
- * @version 1.1.0
+ * @version 1.1.1
  * @source https://github.com/djj48174-hub/QuickTranslate
  * @website https://github.com/djj48174-hub/QuickTranslate
  */
@@ -366,7 +366,8 @@ const CSS = `
 @keyframes qt-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.9; } }
 
 .qt-msg-btn {
-    display: none;
+    display: inline-block;
+    visibility: hidden;
     margin-inline-start: 6px;
     padding: 1px 6px;
     border-radius: 10px;
@@ -380,7 +381,7 @@ const CSS = `
     white-space: nowrap;
 }
 .qt-msg-btn:hover { color: var(--text-normal); background: var(--background-modifier-selected, var(--background-modifier-hover)); }
-.qt-host:hover .qt-msg-btn, .qt-msg-btn.qt-visible { display: inline-block; }
+li[id^="chat-messages-"]:hover .qt-msg-btn, .qt-msg-btn.qt-visible { visibility: visible; }
 
 .qt-translation {
     margin: 5px 0 2px;
@@ -1016,15 +1017,32 @@ module.exports = class QuickTranslate {
         this.decorateMessage(li);
     }
 
+    // هل في الرسالة نص فعلي؟ (نستثني عناصرنا: الزر وبلوك الترجمة)
+    hasTranslatableText(content) {
+        if (!content) return false;
+        let text = String(content.textContent || "");
+        content.querySelectorAll(":scope > .qt-msg-btn, :scope > .qt-translation").forEach((el) => {
+            const inside = String(el.textContent || "");
+            if (inside) text = text.replace(inside, "");
+        });
+        return text.replace(/[\s\u200b\u00a0]/g, "").length > 0;
+    }
+
     decorateMessage(li) {
         const content = li.querySelector('[id^="message-content-"]');
         if (!content) return;
         const messageId = li.id.split("-").pop();
         if (!messageId) return;
 
+        const hasButton = !!content.querySelector(":scope > .qt-msg-btn");
+
+        // رسائل الملصق/الصورة/GIF فقط ما فيها نص، وحاوية المحتوى تكون فاضية —
+        // إدراج الزر فيها كان يزيح الوسائط فيضيع الضغط على الملصق/GIF.
+        if (!hasButton && !this.hasTranslatableText(content)) return;
+
         li.classList.add("qt-host");
 
-        if (!content.querySelector(":scope > .qt-msg-btn")) {
+        if (!hasButton) {
             const button = document.createElement("span");
             button.className = "qt-msg-btn";
             button.textContent = t("msgButton");
