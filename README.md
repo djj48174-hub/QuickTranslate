@@ -4,7 +4,7 @@ A one-click translator plugin for **[BetterDiscord](https://betterdiscord.app)**
 
 Type a message in any language, hit the 🌐 button next to the message box — it gets translated into the language you picked and sent. Hover any message and hit the small 🌐 button to translate it in place.
 
-> The plugin's interface (button labels, toasts, settings) is in **Arabic**. [اقرأ الشرح بالعربي](README.ar.md)
+> The plugin's interface (button labels, toasts, settings) is available in **English and Arabic** — it follows Discord's language by default. [اقرأ الشرح بالعربي](README.ar.md)
 
 ---
 
@@ -14,6 +14,7 @@ Type a message in any language, hit the 🌐 button next to the message box — 
 - **Translate without sending** — `Shift` + click the button to replace your draft with the translation so you can review or edit it first.
 - **Translate incoming messages** — hover a message, click the small 🌐 button, and the translation appears right under it (with `dir="rtl"` for Arabic, Hebrew, Persian, Urdu…).
 - **Two independent languages** — *send to* (default `English`) and *read to* (default `العربية`), 92 languages to choose from.
+- **English & Arabic interface** — every label, toast and setting follows Discord's own language automatically, or you can force Arabic / English in the settings.
 - **Manual only** — nothing happens on its own. Every translation is a click you make.
 - No account access, no token usage, no Nitro tricks, no external libraries.
 
@@ -70,9 +71,9 @@ powershell -ExecutionPolicy Bypass -File uninstall-quicktranslate.ps1
 
 | Action | Result |
 | --- | --- |
-| Hover a message | A small **🌐 ترجم** button appears |
+| Hover a message | A small **🌐 Translate** button appears (**🌐 ترجم** in the Arabic interface) |
 | Click it | The translation is inserted under the message |
-| Click it again / ✕ إخفاء | The translation is hidden |
+| Click it again / the ✕ hide link | The translation is hidden |
 | Right-click it | Pick the *read-to* language |
 
 ---
@@ -83,10 +84,11 @@ Discord → Settings → BetterDiscord → Plugins → *QuickTranslate* ⚙️
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| لغة الإرسال | `en` | Target language when you send a translated message |
-| لغة القراءة | `ar` | Target language when you translate incoming messages |
-| إرسال تلقائي | on | Click 🌐 = translate **and** send (off = ✍️🌐 always previews) |
-| زر ترجمة الرسائل | on | Show the hover button on messages |
+| Send language (`لغة الإرسال`) | `en` | Target language when you send a translated message |
+| Messages language (`لغة القراءة`) | `ar` | Target language when you translate incoming messages |
+| Interface language (`لغة الواجهة`) | `auto` | `auto` follows Discord's language, or force `العربية` / `English` |
+| Auto send (`إرسال تلقائي`) | on | Click 🌐 = translate **and** send (off = ✍️🌐 always previews) |
+| Message button (`زر ترجمة الرسائل`) | on | Show the hover button on messages |
 
 Settings are stored in `%APPDATA%\BetterDiscord\plugins\QuickTranslate.config.json`.
 
@@ -117,7 +119,7 @@ Settings are stored in `%APPDATA%\BetterDiscord\plugins\QuickTranslate.config.js
 node tests/core.test.mjs
 ```
 
-25 unit tests covering URL building (including parameter-injection resistance), response parsing, chunking, RTL detection, Arabic language labels and the Slate range helpers.
+33 unit tests covering URL building (including parameter-injection resistance), response parsing, chunking, RTL detection, Arabic + English language labels, the bilingual interface strings and the Slate range helpers.
 
 ---
 

@@ -1,8 +1,8 @@
 /**
  * @name QuickTranslate
  * @author ijl
- * @description One-click translator: hit the 🌐 button next to the message box to send your message translated, and hover any message to translate it in place. (واجهة عربية)
- * @version 1.0.0
+ * @description One-click translator: hit the 🌐 button next to the message box to send your message translated, and hover any message to translate it in place. Interface available in English and Arabic. (واجهة عربية وإنجليزية)
+ * @version 1.1.0
  * @source https://github.com/djj48174-hub/QuickTranslate
  * @website https://github.com/djj48174-hub/QuickTranslate
  */
@@ -111,6 +111,149 @@ const LANGUAGE_LIST = [
 
 const LANGUAGES = LANGUAGE_LIST.map(([code, label]) => ({ code, label }));
 
+// أسماء اللغات بالإنجليزي (بنفس ترتيب القائمة الأساسية)
+const EN_NAMES = {
+    ar: "Arabic", en: "English", fr: "French", es: "Spanish", de: "German",
+    tr: "Turkish", ru: "Russian", it: "Italian", pt: "Portuguese", nl: "Dutch",
+    pl: "Polish", uk: "Ukrainian", ro: "Romanian", el: "Greek", sv: "Swedish",
+    da: "Danish", no: "Norwegian", fi: "Finnish", cs: "Czech", sk: "Slovak",
+    hu: "Hungarian", bg: "Bulgarian", sr: "Serbian", hr: "Croatian", sl: "Slovenian",
+    bs: "Bosnian", mk: "Macedonian", sq: "Albanian", lt: "Lithuanian", lv: "Latvian",
+    et: "Estonian", is: "Icelandic", he: "Hebrew", fa: "Persian", ur: "Urdu",
+    ps: "Pashto", ku: "Kurdish", sd: "Sindhi", yi: "Yiddish", hi: "Hindi",
+    bn: "Bengali", ta: "Tamil", te: "Telugu", ml: "Malayalam", mr: "Marathi",
+    gu: "Gujarati", kn: "Kannada", pa: "Punjabi", ne: "Nepali", si: "Sinhala",
+    "zh-CN": "Chinese (Simplified)", "zh-TW": "Chinese (Traditional)", ja: "Japanese",
+    ko: "Korean", th: "Thai", vi: "Vietnamese", id: "Indonesian", ms: "Malay",
+    fil: "Filipino", jv: "Javanese", su: "Sundanese", my: "Burmese", km: "Khmer",
+    lo: "Lao", ka: "Georgian", hy: "Armenian", az: "Azerbaijani", kk: "Kazakh",
+    uz: "Uzbek", ky: "Kyrgyz", tg: "Tajik", mn: "Mongolian", am: "Amharic",
+    sw: "Swahili", so: "Somali", ha: "Hausa", yo: "Yoruba", ig: "Igbo",
+    zu: "Zulu", af: "Afrikaans", ca: "Catalan", eu: "Basque", gl: "Galician",
+    cy: "Welsh", ga: "Irish", mt: "Maltese", la: "Latin", eo: "Esperanto",
+    ht: "Haitian Creole", ceb: "Cebuano", mi: "Maori", haw: "Hawaiian"
+};
+
+// ---------------------------------------------------------------------------
+// نصوص الواجهة — عربي (ar) وإنجليزي (en)
+// ---------------------------------------------------------------------------
+const STRINGS = {
+    ar: {
+        inputTitle: "ترجم رسالتي إلى: {to}\n(يسار: ترجم وأرسل — Shift+يسار: ترجم بدون إرسال — يمين: اختيار اللغة)",
+        menuTitle: "🌐 مترجم سريع",
+        sendLang: "لغة الإرسال",
+        readLang: "لغة ترجمة الرسائل",
+        autoSend: "أرسل الرسالة مباشرة بعد الترجمة",
+        menuHint: "زر 🌐 في مربع الكتابة: يسار = ترجم وأرسل، Shift+يسار = ترجم بدون إرسال، يمين = هذي القائمة.",
+        msgButton: "🌐 ترجم",
+        msgTitle: "ترجم إلى {to} (يمين: تغيير اللغة)",
+        hide: "✕ إخفاء",
+        emptyDraft: "اكتب رسالة أول 🙂",
+        noWrite: "ما قدرت أكتب في المربع — جرّب مرة ثانية",
+        notSent: "🌐 {from} ← {to} (بدون إرسال)",
+        sentFrom: "✅ أُرسلت مترجمة من {from} إلى {to}",
+        readyInBox: "الترجمة جاهزة في المربع — اضغط Enter للإرسال",
+        translateFailed: "فشلت الترجمة: {error}",
+        noText: "ما فيه نص قابل للترجمة في هذي الرسالة",
+        translating: "… أترجم",
+        auto: "تلقائي",
+        settingsSend: "لغة إرسال رسائلي",
+        settingsRead: "لغة ترجمة رسائل الآخرين",
+        settingsAuto: "أرسل الرسالة تلقائيًا بعد الترجمة",
+        settingsButton: "أظهر زر ترجمة عند مرور الماوس على الرسائل",
+        settingsHint: "التلميح: اضغط بالزر الأيمن على زر 🌐 لاختيار اللغة بسرعة. الترجمة تحتاج إنترنت.",
+        uiLang: "لغة الواجهة",
+        uiAuto: "تلقائي (حسب ديسكورد)",
+        uiAr: "العربية",
+        uiEn: "الإنجليزية",
+        badResponse: "رد غير مفهوم من خدمة الترجمة",
+        noTranslation: "ما رجعت ترجمة",
+        serviceError: "خدمة الترجمة رجعت خطأ ({status})"
+    },
+    en: {
+        inputTitle: "Translate my message to: {to}\n(left click: translate & send — Shift+click: translate without sending — right click: choose the language)",
+        menuTitle: "🌐 QuickTranslate",
+        sendLang: "Send language",
+        readLang: "Messages language",
+        autoSend: "Send the message right after translating",
+        menuHint: "The 🌐 button in the message box: left click = translate & send, Shift+click = translate without sending, right click = this menu.",
+        msgButton: "🌐 Translate",
+        msgTitle: "Translate to {to} (right click: change language)",
+        hide: "✕ Hide",
+        emptyDraft: "Type a message first 🙂",
+        noWrite: "Could not write into the message box — try again",
+        notSent: "🌐 {from} ← {to} (not sent)",
+        sentFrom: "✅ Sent translated from {from} to {to}",
+        readyInBox: "The translation is ready in the message box — press Enter to send it",
+        translateFailed: "Translation failed: {error}",
+        noText: "No translatable text in this message",
+        translating: "… translating",
+        auto: "Auto",
+        settingsSend: "Language of my messages",
+        settingsRead: "Language for other people's messages",
+        settingsAuto: "Send the message automatically after translating",
+        settingsButton: "Show a translate button when hovering messages",
+        settingsHint: "Tip: right click the 🌐 button to change the language quickly. Translating needs internet.",
+        uiLang: "Interface language",
+        uiAuto: "Automatic (follow Discord)",
+        uiAr: "Arabic",
+        uiEn: "English",
+        badResponse: "Unreadable response from the translation service",
+        noTranslation: "No translation was returned",
+        serviceError: "The translation service returned an error ({status})"
+    }
+};
+
+// لغة الواجهة الحالية: "ar" أو "en"
+let UI_LANG = "ar";
+
+function setUiLang(value) {
+    UI_LANG = value === "en" ? "en" : "ar";
+    return UI_LANG;
+}
+
+function getUiLang() {
+    return UI_LANG;
+}
+
+// "auto" = نتبع لغة ديسكورد نفسها
+function resolveUiLang(setting) {
+    if (setting === "ar" || setting === "en") return setting;
+    let locale = "";
+    try {
+        if (typeof window !== "undefined" && window.BdApi && window.BdApi.Webpack &&
+            typeof window.BdApi.Webpack.getByKeys === "function") {
+            const mod = window.BdApi.Webpack.getByKeys("getLocale");
+            if (mod && typeof mod.getLocale === "function") locale = String(mod.getLocale() || "");
+        }
+    } catch (e) { /* ignore */ }
+    if (!locale) {
+        try {
+            if (typeof document !== "undefined" && document.documentElement) {
+                locale = String(document.documentElement.lang || "");
+            }
+        } catch (e) { /* ignore */ }
+    }
+    if (!locale) {
+        try {
+            if (typeof navigator !== "undefined") locale = String(navigator.language || "");
+        } catch (e) { /* ignore */ }
+    }
+    return /^ar\b/i.test(locale) ? "ar" : "en";
+}
+
+function t(key, params) {
+    const table = STRINGS[UI_LANG] || STRINGS.ar;
+    let value = typeof table[key] === "string" ? table[key] : STRINGS.ar[key];
+    if (typeof value !== "string") return key;
+    if (params) {
+        for (const name of Object.keys(params)) {
+            value = value.split("{" + name + "}").join(String(params[name]));
+        }
+    }
+    return value;
+}
+
 const RTL_LANGS = new Set(["ar", "he", "fa", "ur", "ps", "sd", "yi", "ku", "dv"]);
 
 const ENDPOINT = "https://translate.googleapis.com/translate_a/single";
@@ -132,7 +275,7 @@ function buildUrl(text, target, source) {
 
 function parseGoogleResponse(data) {
     if (!Array.isArray(data) || !Array.isArray(data[0])) {
-        throw new Error("رد غير مفهوم من خدمة الترجمة");
+        throw new Error(t("badResponse"));
     }
     const text = data[0]
         .map((segment) => (Array.isArray(segment) ? segment[0] : ""))
@@ -142,7 +285,7 @@ function parseGoogleResponse(data) {
     if (!detected && Array.isArray(data[8]) && Array.isArray(data[8][0])) {
         detected = data[8][0][0] || null;
     }
-    if (!text) throw new Error("ما رجعت ترجمة");
+    if (!text) throw new Error(t("noTranslation"));
     return { text, detected };
 }
 
@@ -151,10 +294,13 @@ function isRtl(code) {
     return RTL_LANGS.has(String(code).split("-")[0].toLowerCase());
 }
 
-function languageLabel(code) {
-    if (code === "auto") return "تلقائي";
+function languageLabel(code, ui) {
+    const lang = ui || UI_LANG;
+    if (code === "auto") return t("auto");
     const found = LANGUAGES.find((l) => l.code === code);
-    return found ? found.label : code;
+    if (!found) return code;
+    if (lang === "en") return EN_NAMES[found.code] || found.code;
+    return found.label;
 }
 
 function chunkText(text, max) {
@@ -192,7 +338,8 @@ const DEFAULTS = {
     sendTo: "en",
     readTo: "ar",
     autoSend: true,
-    showMessageButton: true
+    showMessageButton: true,
+    uiLang: "auto"
 };
 
 const CSS = `
@@ -425,6 +572,7 @@ module.exports = class QuickTranslate {
     // ---------------------------------------------------------------- الحياة
     start() {
         this.loadSettings();
+        this.applyUiLang();
         this.injectStyles();
 
         // مرجع للتشخيص (BdApi/console)
@@ -453,7 +601,7 @@ module.exports = class QuickTranslate {
             } catch (e) { /* ignore */ }
         }, 1500);
 
-        log("بدأ — لغة الإرسال:", this.settings.sendTo, "لغة العرض:", this.settings.readTo);
+        log("started — sendTo:", this.settings.sendTo, "readTo:", this.settings.readTo, "ui:", getUiLang());
     }
 
     stop() {
@@ -493,6 +641,28 @@ module.exports = class QuickTranslate {
         } catch (e) { log("loadSettings", e); }
         if (!LANGUAGES.some((l) => l.code === this.settings.sendTo)) this.settings.sendTo = DEFAULTS.sendTo;
         if (!LANGUAGES.some((l) => l.code === this.settings.readTo)) this.settings.readTo = DEFAULTS.readTo;
+        if (["auto", "ar", "en"].indexOf(this.settings.uiLang) === -1) this.settings.uiLang = DEFAULTS.uiLang;
+        return this.settings;
+    }
+
+    // نطبّق لغة الواجهة على كل شي ظاهر
+    applyUiLang() {
+        setUiLang(resolveUiLang(this.settings.uiLang));
+
+        this.updateInputButtonLabel();
+
+        document.querySelectorAll(".qt-msg-btn").forEach((el) => {
+            el.textContent = t("msgButton");
+            el.title = t("msgTitle", { to: languageLabel(this.settings.readTo) });
+        });
+
+        document.querySelectorAll(".qt-translation").forEach((block) => {
+            const id = block.dataset ? block.dataset.messageId : null;
+            const payload = id ? this.results.get(id) : null;
+            if (payload) this.updateTranslationMeta(block, payload);
+        });
+
+        return getUiLang();
     }
 
     saveSettings(patch) {
@@ -539,7 +709,7 @@ module.exports = class QuickTranslate {
             if (!chunk.trim()) { pieces.push(chunk); continue; }
             const response = await this.request(buildUrl(chunk, target, source));
             if (!response || !response.ok) {
-                throw new Error("خدمة الترجمة رجعت خطأ (" + (response ? response.status : "?") + ")");
+                throw new Error(t("serviceError", { status: response ? response.status : "?" }));
             }
             const data = await response.json();
             const parsed = parseGoogleResponse(data);
@@ -576,7 +746,6 @@ module.exports = class QuickTranslate {
         button.className = "qt-input-btn";
         button.setAttribute("role", "button");
         button.setAttribute("tabindex", "0");
-        button.title = "ترجم رسالتي إلى: " + languageLabel(this.settings.sendTo) + "\n(يسار: ترجم وأرسل — Shift+يسار: ترجم بدون إرسال — يمين: اختيار اللغة)";
 
         if (!host.classList.contains("qt-btn-host")) host.classList.add("qt-btn-host");
         host.insertBefore(button, host.firstChild);
@@ -617,6 +786,7 @@ module.exports = class QuickTranslate {
         const code = this.settings.sendTo;
         this.inputButton.textContent = "🌐";
         this.inputButton.dataset.target = code;
+        this.inputButton.title = t("inputTitle", { to: languageLabel(code) });
     }
 
     flash(button, state) {
@@ -786,7 +956,7 @@ module.exports = class QuickTranslate {
     async translateDraft(autoSend, button) {
         const draft = this.getDraft();
         if (!draft.trim()) {
-            this.toast("اكتب رسالة أول 🙂", "error");
+            this.toast(t("emptyDraft"), "error");
             this.flash(button, "err");
             return;
         }
@@ -796,23 +966,23 @@ module.exports = class QuickTranslate {
 
         try {
             const result = await this.translate(draft.trim(), target, "auto");
-            const from = result.detected ? languageLabel(result.detected) : "تلقائي";
+            const from = result.detected ? languageLabel(result.detected) : t("auto");
 
             if (autoSend === false) {
                 if (!this.setDraft(result.text)) {
                     this.flash(button, "err");
-                    this.toast("ما قدرت أكتب في المربع — جرّب مرة ثانية", "error");
+                    this.toast(t("noWrite"), "error");
                     return;
                 }
                 this.flash(button, "ok");
-                this.toast("🌐 " + from + " ← " + languageLabel(target) + " (بدون إرسال)");
+                this.toast(t("notSent", { from: from, to: languageLabel(target) }));
                 return;
             }
 
             if (await this.sendViaDiscord(result.text)) {
                 this.clearDraft();
                 this.flash(button, "ok");
-                this.toast("✅ أُرسلت مترجمة من " + from + " إلى " + languageLabel(target));
+                this.toast(t("sentFrom", { from: from, to: languageLabel(target) }));
                 return;
             }
 
@@ -822,15 +992,15 @@ module.exports = class QuickTranslate {
             this.sendCurrentMessage();
             if (await this.waitForDraftEmpty(1500)) {
                 this.flash(button, "ok");
-                this.toast("✅ أُرسلت مترجمة من " + from + " إلى " + languageLabel(target));
+                this.toast(t("sentFrom", { from: from, to: languageLabel(target) }));
             } else {
                 this.flash(button, "err");
-                this.toast("الترجمة جاهزة في المربع — اضغط Enter للإرسال", "error");
+                this.toast(t("readyInBox"), "error");
             }
         } catch (error) {
             log("translateDraft", error);
             this.flash(button, "err");
-            this.toast("فشلت الترجمة: " + (error && error.message ? error.message : error), "error");
+            this.toast(t("translateFailed", { error: error && error.message ? error.message : error }), "error");
         }
     }
 
@@ -857,8 +1027,8 @@ module.exports = class QuickTranslate {
         if (!content.querySelector(":scope > .qt-msg-btn")) {
             const button = document.createElement("span");
             button.className = "qt-msg-btn";
-            button.textContent = "🌐 ترجم";
-            button.title = "ترجم إلى " + languageLabel(this.settings.readTo) + " (يمين: تغيير اللغة)";
+            button.textContent = t("msgButton");
+            button.title = t("msgTitle", { to: languageLabel(this.settings.readTo) });
             button.addEventListener("click", (event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -910,7 +1080,7 @@ module.exports = class QuickTranslate {
 
         const text = this.extractText(content);
         if (!looksTranslatable(text)) {
-            this.toast("ما فيه نص قابل للترجمة في هذي الرسالة", "error");
+            this.toast(t("noText"), "error");
             return;
         }
 
@@ -920,7 +1090,7 @@ module.exports = class QuickTranslate {
 
         const placeholder = document.createElement("div");
         placeholder.className = "qt-translation qt-loading";
-        placeholder.textContent = "… أترجم";
+        placeholder.textContent = t("translating");
         content.appendChild(placeholder);
 
         try {
@@ -940,42 +1110,58 @@ module.exports = class QuickTranslate {
             log("toggleMessageTranslation", error);
             placeholder.classList.remove("qt-loading");
             placeholder.classList.add("qt-error");
-            placeholder.textContent = "فشلت الترجمة: " + (error && error.message ? error.message : error);
+            placeholder.textContent = t("translateFailed", { error: error && error.message ? error.message : error });
         } finally {
             this.pending.delete(messageId);
         }
+    }
+
+    updateTranslationMeta(block, payload) {
+        const meta = block.querySelector(".qt-meta");
+        if (!meta) return;
+        const from = payload && payload.source ? languageLabel(payload.source) : t("auto");
+        const to = payload ? languageLabel(payload.target) : languageLabel(this.settings.readTo);
+        meta.textContent = "🌐 " + from + " ← " + to;
+
+        const close = document.createElement("span");
+        close.className = "qt-close";
+        close.textContent = t("hide");
+        close.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            block.remove();
+            const id = block.dataset ? block.dataset.messageId : null;
+            if (id) this.shown.delete(id);
+        });
+        meta.appendChild(close);
     }
 
     renderTranslation(content, messageId, payload, replaceNode) {
         const block = document.createElement("div");
         block.className = "qt-translation" + (payload.rtl ? " qt-rtl" : "");
         block.setAttribute("dir", payload.rtl ? "rtl" : "auto");
+        block.dataset.messageId = messageId;
 
         const meta = document.createElement("span");
         meta.className = "qt-meta";
-        const from = payload.source ? languageLabel(payload.source) : "تلقائي";
-        meta.textContent = "🌐 " + from + " ← " + languageLabel(payload.target);
-
-        const close = document.createElement("span");
-        close.className = "qt-close";
-        close.textContent = "✕ إخفاء";
-        close.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            block.remove();
-            this.shown.delete(messageId);
-        });
-        meta.appendChild(close);
+        block.appendChild(meta);
 
         const text = document.createElement("span");
         text.className = "qt-text";
         text.textContent = payload.text;
-
-        block.appendChild(meta);
         block.appendChild(text);
+
+        this.updateTranslationMeta(block, payload);
 
         if (replaceNode && replaceNode.parentNode) replaceNode.replaceWith(block);
         else content.appendChild(block);
+    }
+
+    // نطبّق اتجاه الواجهة (يمين للعربي، يسار للإنجليزي)
+    applyDirection(element) {
+        const rtl = getUiLang() === "ar";
+        element.style.direction = rtl ? "rtl" : "ltr";
+        element.style.textAlign = rtl ? "right" : "left";
     }
 
     // القائمة الصغيرة
@@ -984,11 +1170,11 @@ module.exports = class QuickTranslate {
 
         const menu = document.createElement("div");
         menu.className = "qt-menu";
-        menu.dir = "rtl";
+        this.applyDirection(menu);
 
         const title = document.createElement("div");
         title.className = "qt-title";
-        title.textContent = "🌐 مترجم سريع";
+        title.textContent = t("menuTitle");
         menu.appendChild(title);
 
         const makeSelect = (labelText, key) => {
@@ -1000,7 +1186,7 @@ module.exports = class QuickTranslate {
             LANGUAGES.forEach((language) => {
                 const option = document.createElement("option");
                 option.value = language.code;
-                option.textContent = language.label;
+                option.textContent = languageLabel(language.code);
                 if (language.code === this.settings[key]) option.selected = true;
                 select.appendChild(option);
             });
@@ -1008,7 +1194,7 @@ module.exports = class QuickTranslate {
                 const patch = {};
                 patch[key] = select.value;
                 this.saveSettings(patch);
-                this.updateInputButtonLabel();
+                this.applyUiLang();
                 this.refreshOpenTranslations();
             });
             row.appendChild(label);
@@ -1017,8 +1203,8 @@ module.exports = class QuickTranslate {
             return select;
         };
 
-        const sendSelect = makeSelect("لغة الإرسال", "sendTo");
-        makeSelect("لغة ترجمة الرسائل", "readTo");
+        const sendSelect = makeSelect(t("sendLang"), "sendTo");
+        makeSelect(t("readLang"), "readTo");
 
         const autoRow = document.createElement("label");
         autoRow.className = "qt-check";
@@ -1027,12 +1213,12 @@ module.exports = class QuickTranslate {
         autoBox.checked = this.settings.autoSend !== false;
         autoBox.addEventListener("change", () => this.saveSettings({ autoSend: autoBox.checked }));
         autoRow.appendChild(autoBox);
-        autoRow.appendChild(document.createTextNode("أرسل الرسالة مباشرة بعد الترجمة"));
+        autoRow.appendChild(document.createTextNode(t("autoSend")));
         menu.appendChild(autoRow);
 
         const hint = document.createElement("div");
         hint.className = "qt-hint";
-        hint.textContent = "زر 🌐 في مربع الكتابة: يسار = ترجم وأرسل، Shift+يسار = ترجم بدون إرسال، يمين = هذي القائمة.";
+        hint.textContent = t("menuHint");
         menu.appendChild(hint);
 
         document.body.appendChild(menu);
@@ -1065,61 +1251,73 @@ module.exports = class QuickTranslate {
     getSettingsPanel() {
         const panel = document.createElement("div");
         panel.className = "qt-panel";
-        panel.dir = "rtl";
 
-        const row = (labelText, key) => {
-            const wrap = document.createElement("div");
-            wrap.className = "qt-row";
-            const label = document.createElement("span");
-            label.textContent = labelText;
-            const select = document.createElement("select");
-            LANGUAGES.forEach((language) => {
-                const option = document.createElement("option");
-                option.value = language.code;
-                option.textContent = language.label;
-                if (language.code === this.settings[key]) option.selected = true;
-                select.appendChild(option);
-            });
-            select.addEventListener("change", () => {
-                const patch = {};
-                patch[key] = select.value;
-                this.saveSettings(patch);
-                this.updateInputButtonLabel();
-            });
-            wrap.appendChild(label);
-            wrap.appendChild(select);
-            panel.appendChild(wrap);
-            return select;
+        const build = () => {
+            panel.innerHTML = "";
+            this.applyDirection(panel);
+
+            const row = (labelText, key, options) => {
+                const wrap = document.createElement("div");
+                wrap.className = "qt-row";
+                const label = document.createElement("span");
+                label.textContent = labelText;
+                const select = document.createElement("select");
+                const list = options || LANGUAGES.map((l) => ({ value: l.code, label: languageLabel(l.code) }));
+                list.forEach((item) => {
+                    const option = document.createElement("option");
+                    option.value = item.value;
+                    option.textContent = item.label;
+                    if (item.value === this.settings[key]) option.selected = true;
+                    select.appendChild(option);
+                });
+                select.addEventListener("change", () => {
+                    const patch = {};
+                    patch[key] = select.value;
+                    this.saveSettings(patch);
+                    this.applyUiLang();
+                    if (key === "uiLang") build();
+                });
+                wrap.appendChild(label);
+                wrap.appendChild(select);
+                panel.appendChild(wrap);
+                return select;
+            };
+
+            row(t("settingsSend"), "sendTo");
+            row(t("settingsRead"), "readTo");
+            row(t("uiLang"), "uiLang", [
+                { value: "auto", label: t("uiAuto") },
+                { value: "ar", label: t("uiAr") },
+                { value: "en", label: t("uiEn") }
+            ]);
+
+            const check = (labelText, key) => {
+                const wrap = document.createElement("label");
+                wrap.className = "qt-check";
+                wrap.style.marginBottom = "10px";
+                const box = document.createElement("input");
+                box.type = "checkbox";
+                box.checked = this.settings[key] !== false;
+                box.addEventListener("change", () => {
+                    const patch = {};
+                    patch[key] = box.checked;
+                    this.saveSettings(patch);
+                });
+                wrap.appendChild(box);
+                wrap.appendChild(document.createTextNode(labelText));
+                panel.appendChild(wrap);
+            };
+
+            check(t("settingsAuto"), "autoSend");
+            check(t("settingsButton"), "showMessageButton");
+
+            const hint = document.createElement("div");
+            hint.className = "qt-hint";
+            hint.textContent = t("settingsHint");
+            panel.appendChild(hint);
         };
 
-        row("لغة إرسال رسائلي", "sendTo");
-        row("لغة ترجمة رسائل الآخرين", "readTo");
-
-        const check = (labelText, key) => {
-            const wrap = document.createElement("label");
-            wrap.className = "qt-check";
-            wrap.style.marginBottom = "10px";
-            const box = document.createElement("input");
-            box.type = "checkbox";
-            box.checked = this.settings[key] !== false;
-            box.addEventListener("change", () => {
-                const patch = {};
-                patch[key] = box.checked;
-                this.saveSettings(patch);
-            });
-            wrap.appendChild(box);
-            wrap.appendChild(document.createTextNode(labelText));
-            panel.appendChild(wrap);
-        };
-
-        check("أرسل الرسالة تلقائيًا بعد الترجمة", "autoSend");
-        check("أظهر زر ترجمة عند مرور الماوس على الرسائل", "showMessageButton");
-
-        const hint = document.createElement("div");
-        hint.className = "qt-hint";
-        hint.textContent = "التلميح: اضغط بالزر الأيمن على زر 🌐 لاختيار اللغة بسرعة. الترجمة تحتاج إنترنت.";
-        panel.appendChild(hint);
-
+        build();
         return panel;
     }
 
@@ -1135,11 +1333,17 @@ module.exports = class QuickTranslate {
 
 module.exports.__internals = {
     LANGUAGES,
+    EN_NAMES,
+    STRINGS,
     RTL_LANGS,
     buildUrl,
     parseGoogleResponse,
     isRtl,
     languageLabel,
+    setUiLang,
+    getUiLang,
+    resolveUiLang,
+    t,
     chunkText,
     looksTranslatable,
     hasArabic,

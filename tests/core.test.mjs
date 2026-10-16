@@ -193,5 +193,63 @@ test("مدى الاختيار يتعامل مع مربع فاضي", () => {
     });
 });
 
+// --- الواجهة (عربي / إنجليزي) ---------------------------------------------
+test("كل لغة لها اسم إنجليزي", () => {
+    for (const language of T.LANGUAGES) {
+        assert.ok(T.EN_NAMES[language.code], "ناقص إنجليزي: " + language.code);
+    }
+});
+
+test("الأسماء الإنجليزية ما فيها حروف عربية", () => {
+    for (const code of Object.keys(T.EN_NAMES)) {
+        assert.ok(!/[\u0600-\u06FF]/.test(T.EN_NAMES[code]), "فيه عربي: " + code);
+    }
+});
+
+test("جدولا النصوص فيهما نفس المفاتيح", () => {
+    const arKeys = Object.keys(T.STRINGS.ar).sort();
+    const enKeys = Object.keys(T.STRINGS.en).sort();
+    assert.deepEqual(enKeys, arKeys);
+});
+
+test("النصوص الإنجليزية كلها موجودة وما فيها عربي", () => {
+    for (const key of Object.keys(T.STRINGS.en)) {
+        const value = T.STRINGS.en[key];
+        assert.ok(value && value.length > 0, "ناقص: " + key);
+        assert.ok(!/[\u0600-\u06FF]/.test(value), "فيه عربي: " + key);
+    }
+});
+
+test("تبديل لغة الواجهة يغيّر النصوص والأسماء", () => {
+    assert.equal(T.setUiLang("en"), "en");
+    assert.equal(T.getUiLang(), "en");
+    assert.equal(T.languageLabel("ar"), "Arabic");
+    assert.equal(T.languageLabel("zh-CN"), "Chinese (Simplified)");
+    assert.equal(T.languageLabel("auto"), "Auto");
+    assert.equal(T.t("hide"), "✕ Hide");
+
+    assert.equal(T.setUiLang("ar"), "ar");
+    assert.equal(T.languageLabel("ar"), "العربية");
+    assert.equal(T.t("hide"), "✕ إخفاء");
+});
+
+test("قيمة غير معروفة ترجع للعربي", () => {
+    T.setUiLang("fr");
+    assert.equal(T.getUiLang(), "ar");
+});
+
+test("تمرير المتغيرات داخل النصوص", () => {
+    T.setUiLang("en");
+    assert.equal(T.t("msgTitle", { to: "French" }), "Translate to French (right click: change language)");
+    T.setUiLang("ar");
+    assert.equal(T.t("msgTitle", { to: "الفرنسية" }), "ترجم إلى الفرنسية (يمين: تغيير اللغة)");
+});
+
+test("لغة الواجهة auto تُحسم لواحد من الاثنين", () => {
+    assert.equal(T.resolveUiLang("ar"), "ar");
+    assert.equal(T.resolveUiLang("en"), "en");
+    assert.ok(["ar", "en"].indexOf(T.resolveUiLang("auto")) !== -1);
+});
+
 console.log("\n" + (fail === 0 ? "✅" : "❌") + " نجح: " + pass + " — فشل: " + fail + "\n");
 if (fail > 0) process.exit(1);
