@@ -1,0 +1,14 @@
+# أدوات تشخيص محلية (ما تُنشر)
+ref/
+
+# إعدادات البلجن المحلية
+*.config.json
+
+# node
+node_modules/
+npm-debug.log*
+
+# نظام
+Thumbs.db
+desktop.ini
+.DS_Store
