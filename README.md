@@ -33,11 +33,19 @@ Type a message in any language, hit the 🌐 button next to the message box — 
 
 4. **Enable it** — Discord → Settings → BetterDiscord → Plugins → toggle *QuickTranslate*.
 
-**Windows shortcut:** the repo ships an installer script that copies, enables and restarts Discord for you:
+**Windows one-command install:**
+
+```powershell
+irm https://raw.githubusercontent.com/djj48174-hub/QuickTranslate/main/install-quicktranslate.ps1 | iex
+```
+
+Or download [`install-quicktranslate.ps1`](https://github.com/djj48174-hub/QuickTranslate/releases/latest/download/install-quicktranslate.ps1) and run it:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File install-quicktranslate.ps1
 ```
+
+The script is standalone: if the plugin file is not sitting next to it, it downloads it from GitHub, copies it into BetterDiscord, enables it and restarts Discord. Add `-NoRestart` to skip the restart, or `-Source <path>` to install a local file.
 
 To remove it again:
 

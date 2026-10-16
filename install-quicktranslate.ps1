@@ -1,47 +1,121 @@
 # ---------------------------------------------------------------------------
-#  Install QuickTranslate into BetterDiscord (and enable it).
+#  QuickTranslate installer for BetterDiscord (Windows)
+#
+#  Works standalone: you can download just this file and run it. If the plugin
+#  file is not sitting next to the script, it is downloaded from GitHub.
 #
 #  Usage:
 #     powershell -ExecutionPolicy Bypass -File install-quicktranslate.ps1
 #     powershell -ExecutionPolicy Bypass -File install-quicktranslate.ps1 -NoRestart
+#     powershell -ExecutionPolicy Bypass -File install-quicktranslate.ps1 -Source C:\path\QuickTranslate.plugin.js
 #
-#  Uninstall:
+#  Remove it again:
 #     powershell -ExecutionPolicy Bypass -File uninstall-quicktranslate.ps1
+#
+#  Repo: https://github.com/djj48174-hub/QuickTranslate
 # ---------------------------------------------------------------------------
 
 [CmdletBinding()]
 param(
-    [switch]$NoRestart
+    [switch]$NoRestart,
+    [string]$Source
 )
 
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch { }
 
 $PluginId   = 'QuickTranslate'
 $PluginFile = 'QuickTranslate.plugin.js'
-$Source     = Join-Path $PSScriptRoot ('plugin\' + $PluginFile)
+$RepoUrl    = 'https://github.com/djj48174-hub/QuickTranslate'
+$ReleaseUrl = $RepoUrl + '/releases/latest/download/' + $PluginFile
+$RawUrl     = 'https://raw.githubusercontent.com/djj48174-hub/QuickTranslate/main/plugin/' + $PluginFile
 $BDRoot     = Join-Path $env:APPDATA 'BetterDiscord'
 $BDPlugins  = Join-Path $BDRoot 'plugins'
 $BDData     = Join-Path $BDRoot 'data\stable\plugins.json'
 
-if (-not (Test-Path $Source)) {
-    Write-Host "Plugin source not found: $Source" -ForegroundColor Red
-    exit 1
+function Test-PluginFile {
+    param([string]$Path)
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $false }
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
+    if ((Get-Item -LiteralPath $Path).Length -lt 10000) { return $false }
+    $head = @(Get-Content -LiteralPath $Path -TotalCount 8 -ErrorAction SilentlyContinue) -join "`n"
+    return ($head -match ('@name\s+' + [regex]::Escape($PluginId)))
 }
 
-if (-not (Test-Path $BDRoot)) {
-    Write-Host "BetterDiscord not installed ($BDRoot missing)." -ForegroundColor Red
-    exit 1
+function Find-LocalPlugin {
+    $candidates = @()
+    if (-not [string]::IsNullOrWhiteSpace($Source)) { $candidates += $Source }
+    if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        $candidates += (Join-Path $PSScriptRoot $PluginFile)
+        $candidates += (Join-Path $PSScriptRoot ('plugin\' + $PluginFile))
+    }
+    foreach ($candidate in $candidates) {
+        if (Test-PluginFile $candidate) { return (Resolve-Path -LiteralPath $candidate).Path }
+    }
+    return $null
 }
 
-# 1) copy the plugin
-if (-not (Test-Path $BDPlugins)) { New-Item -ItemType Directory -Force -Path $BDPlugins | Out-Null }
+function Get-RemotePlugin {
+    param([string]$Destination)
+    foreach ($url in @($ReleaseUrl, $RawUrl)) {
+        try {
+            Write-Host ("Downloading plugin: " + $url) -ForegroundColor Cyan
+            Invoke-WebRequest -Uri $url -OutFile $Destination -UseBasicParsing -TimeoutSec 60
+            if (Test-PluginFile $Destination) { return $true }
+            Write-Host "Downloaded file does not look like the plugin." -ForegroundColor Yellow
+        } catch {
+            Write-Host ("Download failed: " + $_.Exception.Message) -ForegroundColor Yellow
+        }
+    }
+    return $false
+}
+
+Write-Host ""
+Write-Host "  QuickTranslate installer" -ForegroundColor Cyan
+Write-Host ("  " + $RepoUrl) -ForegroundColor DarkGray
+Write-Host ""
+
+# 1) BetterDiscord must exist
+if (-not (Test-Path -LiteralPath $BDRoot)) {
+    Write-Host ("BetterDiscord not found (" + $BDRoot + ").") -ForegroundColor Red
+    Write-Host "Install BetterDiscord first: https://betterdiscord.app" -ForegroundColor Yellow
+    exit 1
+}
+if (-not (Test-Path -LiteralPath $BDPlugins)) {
+    New-Item -ItemType Directory -Force -Path $BDPlugins | Out-Null
+}
+
+# 2) get the plugin (local copy if available, otherwise download)
 $target = Join-Path $BDPlugins $PluginFile
-Copy-Item -LiteralPath $Source -Destination $target -Force
-Write-Host ("Copied plugin -> " + $target) -ForegroundColor Green
+$local = Find-LocalPlugin
 
-# 2) enable it in BetterDiscord's state
+if ($local) {
+    Write-Host ("Using local plugin file: " + $local) -ForegroundColor Green
+    Copy-Item -LiteralPath $local -Destination $target -Force
+} else {
+    Write-Host "No plugin file next to this script - downloading from GitHub..." -ForegroundColor Cyan
+    $temp = Join-Path ([IO.Path]::GetTempPath()) ('qt-' + [Guid]::NewGuid().ToString('N') + '.js')
+    try {
+        if (-not (Get-RemotePlugin -Destination $temp)) {
+            Write-Host ""
+            Write-Host "Could not download the plugin. Check your internet connection, or" -ForegroundColor Red
+            Write-Host ("download it manually from " + $RepoUrl) -ForegroundColor Yellow
+            Write-Host ("and copy it to: " + $BDPlugins) -ForegroundColor Yellow
+            exit 1
+        }
+        Copy-Item -LiteralPath $temp -Destination $target -Force
+    } finally {
+        if (Test-Path -LiteralPath $temp) { Remove-Item -LiteralPath $temp -Force -ErrorAction SilentlyContinue }
+    }
+}
+
+$installed = Get-Item -LiteralPath $target
+Write-Host ("Installed plugin: " + $target + " (" + $installed.Length + " bytes)") -ForegroundColor Green
+
+# 3) enable it in BetterDiscord's state
 $state = @{}
-if (Test-Path $BDData) {
+if (Test-Path -LiteralPath $BDData) {
     try {
         $raw = [IO.File]::ReadAllText($BDData, (New-Object System.Text.UTF8Encoding($false)))
         if (-not [string]::IsNullOrWhiteSpace($raw)) {
@@ -56,13 +130,13 @@ if (Test-Path $BDData) {
 
 $state[$PluginId] = $true
 
-$dir = Split-Path $BDData -Parent
-if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+$dataDir = Split-Path $BDData -Parent
+if (-not (Test-Path -LiteralPath $dataDir)) { New-Item -ItemType Directory -Force -Path $dataDir | Out-Null }
 $json = $state | ConvertTo-Json -Depth 5
 [IO.File]::WriteAllText($BDData, $json, (New-Object System.Text.UTF8Encoding($false)))
-Write-Host ("Enabled in BetterDiscord -> " + $BDData) -ForegroundColor Green
+Write-Host ("Enabled in BetterDiscord: " + $BDData) -ForegroundColor Green
 
-# 3) restart Discord so it loads
+# 4) restart Discord so it loads
 if (-not $NoRestart) {
     $procs = @(Get-Process -Name 'Discord', 'DiscordPTB', 'DiscordCanary' -ErrorAction SilentlyContinue)
     if ($procs.Count -gt 0) {
@@ -74,11 +148,11 @@ if (-not $NoRestart) {
         }
 
         $shortcut = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Discord Inc\Discord.lnk'
-        if (Test-Path $shortcut) {
+        if (Test-Path -LiteralPath $shortcut) {
             Start-Process -FilePath $shortcut
         } else {
             $exe = Join-Path $env:LOCALAPPDATA 'Discord\Update.exe'
-            if (Test-Path $exe) { Start-Process -FilePath $exe -ArgumentList '--processStart', 'Discord.exe' }
+            if (Test-Path -LiteralPath $exe) { Start-Process -FilePath $exe -ArgumentList '--processStart', 'Discord.exe' }
             else { Write-Host "Start Discord manually." -ForegroundColor Yellow }
         }
         Write-Host "Discord restarted." -ForegroundColor Green
